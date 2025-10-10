@@ -5,12 +5,16 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copier le fichier des dépendances et les installer
-# Copier ce fichier en premier permet de profiter du cache de Docker
 COPY requirements.txt .
+
+# Copier ce fichier en premier permet de profiter du cache de Docker
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le reste des fichiers du projet dans le conteneur
-COPY . .
+# Copier les fichiers nécessaires du projet dans le conteneur
+COPY migration.py .
+COPY healthcare_dataset.csv .
+COPY test_integrity.py .
+COPY wait_for_mongo.py .
 
 # Définir la commande à exécuter lorsque le conteneur démarre
 # Le script attendra que la base de données soit prête (géré par docker-compose)

@@ -4,15 +4,14 @@ services:
     container_name: mongodb
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo-data:/data/db
     networks:
-      - healthcare_network
-    command: mongod --bind_ip_all
+      - projet_healthcare
 
   migration_process:
     build: .
@@ -20,7 +19,7 @@ services:
     depends_on:
       - mongodb
     environment:
-      MONGO_URI: mongodb://root:password@mongodb:27017/
+      MONGO_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb:27017/
       DB_NAME: healthcare
       COLLECTION_NAME: patients
       INPUT_CSV_FILE: /app/healthcare_dataset.csv
@@ -28,16 +27,15 @@ services:
     volumes:
       - ./:/app/
     networks:
-      - healthcare_network
+      - projet_healthcare
     command: >
       sh -c "python wait_for_mongo.py &&
              python clean_csv.py &&
              python migration.py &&
              python test_integrity.py"
 
-
 volumes:
   mongo-data:
 networks:
-  healthcare_network:
-    driver: bridge
+  projet_healthcare:
+    external: true
